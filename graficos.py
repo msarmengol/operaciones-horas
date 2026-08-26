@@ -161,36 +161,37 @@ def heatmap_tecnico_semana(filas):
     return fig
 
 
-def asignacion_tecnico_semana(asignaciones):
+def asignacion_proyecto_semana(asignaciones):
     """Igual formato que heatmap_tecnico_semana pero a partir de
-    tabla_asignaciones (lo planificado, no lo trabajado): celda = numero de
-    dias esa semana en los que el tecnico aparecia asignado a algun equipo.
-    Escala de color distinta (muted, no accent) para que a simple vista se
-    note que es un dato de planificacion, no de horas reales."""
-    por_tec_sem = defaultdict(lambda: defaultdict(set))
-    por_tec_total = defaultdict(set)
+    tabla_asignaciones (lo planificado, no lo trabajado), agrupado por
+    PROYECTO en vez de tecnico: celda = numero de dias esa semana en los
+    que el proyecto tenia algun equipo asignado. Escala de color distinta
+    (muted, no accent) para que a simple vista se note que es un dato de
+    planificacion, no de horas reales."""
+    por_proy_sem = defaultdict(lambda: defaultdict(set))
+    por_proy_total = defaultdict(set)
     for a in asignaciones:
-        t = a["tecnico"]
+        p = (a["proyecto"] or "").strip() or "(sin proyecto)"
         y, w = _semana(a["fecha"])
-        por_tec_sem[t][f"{y}-S{w:02d}"].add(a["fecha"])
-        por_tec_total[t].add(a["fecha"])
+        por_proy_sem[p][f"{y}-S{w:02d}"].add(a["fecha"])
+        por_proy_total[p].add(a["fecha"])
 
-    tecnicos = sorted(por_tec_total, key=lambda t: -len(por_tec_total[t]))
-    semanas = sorted({k for t in por_tec_sem for k in por_tec_sem[t]})
+    proyectos = sorted(por_proy_total, key=lambda p: -len(por_proy_total[p]))
+    semanas = sorted({k for p in por_proy_sem for k in por_proy_sem[p]})
 
-    z = [[len(por_tec_sem[t].get(s, ())) for s in semanas] for t in tecnicos]
+    z = [[len(por_proy_sem[p].get(s, ())) for s in semanas] for p in proyectos]
     text = [[str(v) if v else "" for v in row] for row in z]
 
     fig = go.Figure(go.Heatmap(
-        z=z, x=[s.split("-")[1] for s in semanas], y=tecnicos, text=text,
+        z=z, x=[s.split("-")[1] for s in semanas], y=proyectos, text=text,
         texttemplate="%{text}", textfont=dict(size=9),
         colorscale=[[0, "rgba(79,93,117,0.05)"], [1, MUTED]],
         showscale=False, xgap=2, ygap=2,
         hovertemplate="%{y} · %{x}: %{z} día(s) asignado(s)<extra></extra>",
     ))
     fig.update_layout(
-        title="Días asignados por técnico y semana (programación planificada)",
-        height=max(420, 26 * len(tecnicos) + 140),
+        title="Días asignados por proyecto y semana (programación planificada)",
+        height=max(420, 20 * len(proyectos) + 140),
         margin=dict(l=10, r=10, t=50, b=10),
         template="plotly_white",
     )

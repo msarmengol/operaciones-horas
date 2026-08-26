@@ -14,7 +14,7 @@ import streamlit as st
 from chat_utils import DEFAULT_ALIASES, cargar_alias, parsear_mensajes
 from extraer_horas import cruzar_con_programacion, procesar
 from graficos import (
-    asignacion_tecnico_semana,
+    asignacion_proyecto_semana,
     heatmap_tecnico_semana,
     horas_por_tecnico,
     planificado_sin_horas_mensual,
@@ -178,7 +178,7 @@ with tab_asignacion:
         "asignados, no horas."
     )
     if asignaciones:
-        st.plotly_chart(asignacion_tecnico_semana(asignaciones), use_container_width=True)
+        st.plotly_chart(asignacion_proyecto_semana(asignaciones), use_container_width=True)
     else:
         st.info("No hay datos de programación planificada para estos filtros.")
     df_asign = a_df_planificacion(asignaciones)
