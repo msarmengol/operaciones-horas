@@ -73,10 +73,10 @@ def a_df_planificacion(lista):
     return pd.DataFrame(lista, columns=cols)
 
 
-def descargar(df, etiqueta, nombre_archivo):
+def descargar(df, etiqueta, nombre_archivo, key):
     st.download_button(
         etiqueta, df.to_csv(index=False).encode("utf-8-sig"), file_name=nombre_archivo,
-        mime="text/csv",
+        mime="text/csv", key=key,
     )
 
 
@@ -163,13 +163,13 @@ tab_resumen, tab_tecnico, tab_asignacion, tab_plan_real, tab_diag = st.tabs([
 
 with tab_resumen:
     st.plotly_chart(heatmap_tecnico_semana(filas), use_container_width=True)
-    st.dataframe(df_filas, use_container_width=True, hide_index=True)
-    descargar(df_filas, "Descargar tabla_horas.csv", "tabla_horas.csv")
+    st.dataframe(df_filas, use_container_width=True, hide_index=True, key="df_horas_resumen")
+    descargar(df_filas, "Descargar tabla_horas.csv", "tabla_horas.csv", key="dl_horas_resumen")
 
 with tab_tecnico:
     st.plotly_chart(horas_por_tecnico(filas), use_container_width=True)
-    st.dataframe(df_filas, use_container_width=True, hide_index=True)
-    descargar(df_filas, "Descargar tabla_horas.csv", "tabla_horas.csv")
+    st.dataframe(df_filas, use_container_width=True, hide_index=True, key="df_horas_tecnico")
+    descargar(df_filas, "Descargar tabla_horas.csv", "tabla_horas.csv", key="dl_horas_tecnico")
 
 with tab_asignacion:
     st.caption(
@@ -183,7 +183,7 @@ with tab_asignacion:
         st.info("No hay datos de programación planificada para estos filtros.")
     df_asign = a_df_planificacion(asignaciones)
     st.dataframe(df_asign, use_container_width=True, hide_index=True)
-    descargar(df_asign, "Descargar tabla_asignaciones.csv", "tabla_asignaciones.csv")
+    descargar(df_asign, "Descargar tabla_asignaciones.csv", "tabla_asignaciones.csv", key="dl_asignaciones")
 
 with tab_plan_real:
     st.plotly_chart(planificado_vs_real_mensual(filas), use_container_width=True)
@@ -195,15 +195,15 @@ with tab_plan_real:
     )
     df_plan = a_df_planificacion(planificado_sin_horas)
     st.dataframe(df_plan, use_container_width=True, hide_index=True)
-    descargar(df_plan, "Descargar planificado_sin_horas.csv", "planificado_sin_horas.csv")
+    descargar(df_plan, "Descargar planificado_sin_horas.csv", "planificado_sin_horas.csv", key="dl_plan_sin_horas")
 
 with tab_diag:
     st.subheader("Mensajes con horas pero técnico no reconocido")
     df_sr = a_df_diag(resultado["sin_reconocer"])
     st.dataframe(df_sr, use_container_width=True, hide_index=True)
-    descargar(df_sr, "Descargar sin_reconocer.csv", "sin_reconocer.csv")
+    descargar(df_sr, "Descargar sin_reconocer.csv", "sin_reconocer.csv", key="dl_sin_reconocer")
 
     st.subheader("Mensajes 'Imputación de horas' sin datos en texto (dato solo en imagen)")
     df_sd = a_df_diag(resultado["sin_datos"])
     st.dataframe(df_sd, use_container_width=True, hide_index=True)
-    descargar(df_sd, "Descargar sin_datos_imagen.csv", "sin_datos_imagen.csv")
+    descargar(df_sd, "Descargar sin_datos_imagen.csv", "sin_datos_imagen.csv", key="dl_sin_datos")
