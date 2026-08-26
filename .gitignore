@@ -1,0 +1,9 @@
+# Datos del chat y salidas generadas: no van al repo (contienen datos internos
+# y se recalculan en cada ejecucion / con cada archivo que suba el usuario).
+chat_ws_operaciones_2026.md
+*.csv
+streamlit.log
+
+__pycache__/
+*.pyc
+.streamlit/secrets.toml
