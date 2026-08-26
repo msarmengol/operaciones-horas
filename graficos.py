@@ -181,19 +181,58 @@ def asignacion_proyecto_semana(asignaciones):
 
     z = [[len(por_proy_sem[p].get(s, ())) for s in semanas] for p in proyectos]
     text = [[str(v) if v else "" for v in row] for row in z]
+    # Nombres de proyecto truncados para el eje (algunos superan 60
+    # caracteres y le comian todo el ancho al grafico); el nombre completo
+    # queda disponible en el tooltip via customdata.
+    etiquetas_y = [p if len(p) <= 42 else p[:41] + "…" for p in proyectos]
+    customdata = [[p] * len(semanas) for p in proyectos]
 
     fig = go.Figure(go.Heatmap(
-        z=z, x=[s.split("-")[1] for s in semanas], y=proyectos, text=text,
+        z=z, x=[s.split("-")[1] for s in semanas], y=etiquetas_y, text=text,
         texttemplate="%{text}", textfont=dict(size=9),
         colorscale=[[0, "rgba(79,93,117,0.05)"], [1, MUTED]],
         showscale=False, xgap=2, ygap=2,
-        hovertemplate="%{y} · %{x}: %{z} día(s) asignado(s)<extra></extra>",
+        customdata=customdata,
+        hovertemplate="%{customdata} · %{x}: %{z} día(s) asignado(s)<extra></extra>",
     ))
     fig.update_layout(
         title="Días asignados por proyecto y semana (programación planificada)",
         height=max(420, 20 * len(proyectos) + 140),
         margin=dict(l=10, r=10, t=50, b=10),
         template="plotly_white",
+        yaxis=dict(tickfont=dict(size=10)),
     )
     fig.update_yaxes(autorange="reversed")
+    return fig
+
+
+def proyectos_activos_por_semana(asignaciones):
+    """Timeline de variedad: cuantos proyectos distintos tenian algun
+    tecnico asignado cada semana. Complementa (no reemplaza) el heatmap por
+    proyecto — este da la vista general siempre legible; el heatmap sirve
+    para el detalle una vez que se filtra a un proyecto puntual."""
+    por_semana = defaultdict(set)
+    for a in asignaciones:
+        p = (a["proyecto"] or "").strip()
+        if not p:
+            continue
+        y, w = _semana(a["fecha"])
+        por_semana[f"{y}-S{w:02d}"].add(p)
+
+    semanas = sorted(por_semana)
+    valores = [len(por_semana[s]) for s in semanas]
+
+    fig = go.Figure(go.Bar(
+        x=[s.split("-")[1] for s in semanas], y=valores,
+        marker_color="rgba(79,93,117,0.30)", marker_line_color=MUTED, marker_line_width=1,
+        text=[str(v) for v in valores], textposition="outside",
+        hovertemplate="%{x}: %{y} proyecto(s) distintos<extra></extra>",
+    ))
+    fig.update_layout(
+        title="Proyectos distintos activos por semana",
+        height=340,
+        margin=dict(l=10, r=10, t=50, b=10),
+        yaxis_title="Nº de proyectos",
+        template="plotly_white",
+    )
     return fig

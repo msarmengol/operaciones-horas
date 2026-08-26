@@ -17,6 +17,7 @@ from graficos import (
     asignacion_proyecto_semana,
     heatmap_tecnico_semana,
     horas_por_tecnico,
+    proyectos_activos_por_semana,
     planificado_sin_horas_mensual,
     planificado_vs_real_mensual,
 )
@@ -174,10 +175,15 @@ with tab_tecnico:
 with tab_asignacion:
     st.caption(
         "A diferencia de las otras pestañas, esto viene de tabla_asignaciones (lo planificado en "
-        "los mensajes \"PROGRAMACION <día>\"), no de las horas reportadas — por eso cuenta días "
-        "asignados, no horas."
+        "los mensajes \"PROGRAMACION <día>\"), no de las horas reportadas — por eso cuenta días y "
+        "proyectos, no horas."
     )
     if asignaciones:
+        st.plotly_chart(proyectos_activos_por_semana(asignaciones), use_container_width=True)
+        st.caption(
+            "Detalle por proyecto (se vuelve legible al filtrar por 'Proyecto contiene…' en la "
+            "barra lateral — hay más de 170 proyectos distintos, la mayoría trabajos de una sola semana):"
+        )
         st.plotly_chart(asignacion_proyecto_semana(asignaciones), use_container_width=True)
     else:
         st.info("No hay datos de programación planificada para estos filtros.")
