@@ -1,0 +1,339 @@
+<title>Horas por Técnico y Semana</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --paper: #f5f5f5;
+    --paper-2: #ececec;
+    --ink: #2d3142;
+    --muted: #4f5d75;
+    --soft: #7a8399;
+    --accent: #eb6c36;
+    --accent-rgb: 235,108,54;
+    --overlay-10: rgba(45,49,66,0.10);
+    --overlay-14: rgba(45,49,66,0.14);
+    --font-sans: 'Geist', system-ui, sans-serif;
+    --font-serif: 'Instrument Serif', serif;
+    --font-mono: 'Geist Mono', ui-monospace, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #2d3142;
+      --paper-2: #393e53;
+      --ink: #f5f5f5;
+      --muted: #bfc0c0;
+      --soft: #8e98ac;
+      --accent: #f08a59;
+      --accent-rgb: 240,138,89;
+      --overlay-10: rgba(245,245,245,0.10);
+      --overlay-14: rgba(245,245,245,0.16);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #2d3142;
+    --paper-2: #393e53;
+    --ink: #f5f5f5;
+    --muted: #bfc0c0;
+    --soft: #8e98ac;
+    --accent: #f08a59;
+    --accent-rgb: 240,138,89;
+    --overlay-10: rgba(245,245,245,0.10);
+    --overlay-14: rgba(245,245,245,0.16);
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--paper);
+    color: var(--ink);
+    padding: 3rem 1.5rem;
+  }
+
+  .frame { max-width: 1400px; margin: 0 auto; }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+
+  h1 {
+    font-family: var(--font-serif);
+    font-size: clamp(1.5rem, 2.2vw + 0.75rem, 2rem);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    text-wrap: balance;
+    margin-bottom: 0.5rem;
+  }
+
+  .subtitle {
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    color: var(--muted);
+    max-width: 75ch;
+    margin-bottom: 1.5rem;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--overlay-10);
+    border-radius: 6px;
+    background: var(--paper-2);
+  }
+
+  table { border-collapse: separate; border-spacing: 0; font-family: var(--font-mono); }
+
+  th, td {
+    padding: 0;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .th-name {
+    position: sticky; left: 0; z-index: 3;
+    background: var(--paper-2);
+    text-align: left;
+    font-family: var(--font-sans);
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--overlay-14);
+  }
+
+  .th-month-group {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    letter-spacing: 0.12em;
+    color: var(--soft);
+    padding: 5px 2px;
+    border-bottom: 1px solid var(--overlay-10);
+    border-left: 1px solid var(--overlay-10);
+  }
+  .th-month-group.first { border-left: none; }
+
+  .th-week, .th-month {
+    font-family: var(--font-mono);
+    font-size: 7.5px;
+    color: var(--soft);
+    padding: 4px 2px;
+    width: 30px;
+    border-bottom: 1px solid var(--overlay-14);
+  }
+  .th-month { width: 46px; font-weight: 600; color: var(--muted); }
+
+  .col-gap { width: 14px; border-bottom: 1px solid var(--overlay-14); }
+
+  .row-name {
+    position: sticky; left: 0; z-index: 2;
+    background: var(--paper-2);
+    text-align: left;
+    padding: 3px 10px;
+    border-right: 1px solid var(--overlay-10);
+  }
+  .row-name .name { font-family: var(--font-sans); font-size: 10.5px; font-weight: 600; color: var(--ink); }
+  .row-name .total { font-family: var(--font-mono); font-size: 8.5px; color: var(--soft); margin-left: 6px; }
+
+  .cell {
+    width: 30px; height: 22px;
+    font-size: 7.5px;
+    color: var(--ink);
+    background-color: rgba(var(--accent-rgb), var(--a, 0));
+  }
+  .cell.month { width: 46px; font-weight: 600; }
+  .cell.zero { color: var(--overlay-14); }
+
+  tr:nth-child(even) .row-name { background: var(--paper); }
+  tr:nth-child(even) th.th-name { background: var(--paper); }
+
+  .foot {
+    background: var(--paper);
+    border-top: 1.5px solid var(--overlay-14);
+  }
+  .foot .row-name .name { color: var(--muted); font-weight: 500; text-transform: uppercase; font-size: 8px; letter-spacing: 0.08em; }
+  .foot .cell { font-weight: 600; }
+
+  .legend {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 1.25rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    flex-wrap: wrap;
+  }
+  .scale { display: flex; align-items: center; gap: 4px; }
+  .swatch { width: 16px; height: 12px; border-radius: 2px; }
+
+  .footer {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--overlay-10);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--soft);
+  }
+</style>
+
+<div class="frame">
+  <p class="eyebrow">Heatmap · Operaciones</p>
+  <h1>Horas por técnico y semana</h1>
+  <p class="subtitle">Las 30 semanas de 2026 con datos (S02–S31), un técnico por fila, ordenados por horas totales. Las últimas 7 columnas son el agregado mensual. Sombreado por intensidad — semanas y meses usan escalas independientes. Total por técnico junto al nombre.</p>
+
+  <div class="table-wrap">
+    <table id="tabla"></table>
+  </div>
+
+  <div class="legend">
+    <div class="scale">
+      <span>Semana:</span>
+      <span class="swatch" style="background-color: rgba(var(--accent-rgb), 0.08)"></span>
+      <span class="swatch" style="background-color: rgba(var(--accent-rgb), 0.35)"></span>
+      <span class="swatch" style="background-color: rgba(var(--accent-rgb), 0.65)"></span>
+      <span class="swatch" style="background-color: rgba(var(--accent-rgb), 0.92)"></span>
+      <span>0 → 62 h</span>
+    </div>
+    <div class="scale">
+      <span>Mes:</span>
+      <span class="swatch" style="background-color: rgba(var(--accent-rgb), 0.08)"></span>
+      <span class="swatch" style="background-color: rgba(var(--accent-rgb), 0.35)"></span>
+      <span class="swatch" style="background-color: rgba(var(--accent-rgb), 0.65)"></span>
+      <span class="swatch" style="background-color: rgba(var(--accent-rgb), 0.92)"></span>
+      <span>0 → 160 h</span>
+    </div>
+  </div>
+
+  <p class="footer">Fuente: tabla_horas.csv (extracción heurística del chat de operaciones) · Ene–Jul 2026</p>
+</div>
+
+<script>
+const DATA = {"tecnicos": ["Guillermo", "Cristian", "Sherifo", "Yorman Duran", "Elio Tecnico", "Janover", "Wiki Tecnico", "Jose Manuel Perez Practicas", "Alex", "Fran", "Carlos Alberto W", "Santi Camilo Hno", "Ricardo", "Silvana (Sil)", "Aitor", "Demetrio Instalador", "Cesar", "Juan Manuel Martinez", "Fran Amides", "Musta", "Dani", "Yovany De Los Santos"], "semanas": ["S02", "S03", "S04", "S05", "S06", "S07", "S08", "S09", "S10", "S11", "S12", "S13", "S14", "S15", "S16", "S17", "S18", "S19", "S20", "S21", "S22", "S23", "S24", "S25", "S26", "S27", "S28", "S29", "S30", "S31"], "meses": ["2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07"], "totales": {"Guillermo": 761.5, "Cristian": 650.0, "Sherifo": 509.0, "Yorman Duran": 455.0, "Elio Tecnico": 315.0, "Janover": 259.0, "Wiki Tecnico": 210.0, "Jose Manuel Perez Practicas": 199.0, "Alex": 184.0, "Fran": 53.4, "Carlos Alberto W": 47.5, "Santi Camilo Hno": 24.0, "Ricardo": 24.0, "Silvana (Sil)": 19.0, "Aitor": 16.0, "Demetrio Instalador": 12.0, "Cesar": 11.5, "Juan Manuel Martinez": 10.0, "Fran Amides": 8.0, "Musta": 8.0, "Dani": 8.0, "Yovany De Los Santos": 8.0}, "sem": {"Guillermo": {"S02": 0, "S03": 0, "S04": 0, "S05": 0, "S06": 0, "S07": 0, "S08": 32.0, "S09": 44.0, "S10": 34.5, "S11": 32.0, "S12": 48.0, "S13": 32.0, "S14": 8.0, "S15": 16.0, "S16": 24.0, "S17": 40.0, "S18": 62.0, "S19": 35.0, "S20": 35.5, "S21": 24.0, "S22": 32.0, "S23": 41.5, "S24": 32.0, "S25": 43.0, "S26": 16.0, "S27": 32.0, "S28": 40.0, "S29": 25.0, "S30": 9.0, "S31": 24.0}, "Cristian": {"S02": 0, "S03": 0, "S04": 0, "S05": 0, "S06": 0, "S07": 8.0, "S08": 24.0, "S09": 44.0, "S10": 33.0, "S11": 18.0, "S12": 33.0, "S13": 44.0, "S14": 8.0, "S15": 24.0, "S16": 24.0, "S17": 32.0, "S18": 32.0, "S19": 25.0, "S20": 32.0, "S21": 34.0, "S22": 24.0, "S23": 24.0, "S24": 40.0, "S25": 16.0, "S26": 19.0, "S27": 8.0, "S28": 24.0, "S29": 40.0, "S30": 24.0, "S31": 16.0}, "Sherifo": {"S02": 0, "S03": 0, "S04": 0, "S05": 0, "S06": 0, "S07": 0, "S08": 0, "S09": 0, "S10": 16.0, "S11": 32.0, "S12": 16.0, "S13": 33.0, "S14": 16.0, "S15": 32.0, "S16": 0, "S17": 0, "S18": 24.0, "S19": 35.0, "S20": 35.5, "S21": 24.0, "S22": 16.0, "S23": 41.5, "S24": 32.0, "S25": 43.0, "S26": 16.0, "S27": 32.0, "S28": 32.0, "S29": 25.0, "S30": 8.0, "S31": 0}, "Yorman Duran": {"S02": 0, "S03": 0, "S04": 0, "S05": 0, "S06": 0, "S07": 0, "S08": 0, "S09": 0, "S10": 0, "S11": 0, "S12": 0, "S13": 0, "S14": 0, "S15": 24.0, "S16": 0, "S17": 30.0, "S18": 16.0, "S19": 40.0, "S20": 43.5, "S21": 32.0, "S22": 40.0, "S23": 33.5, "S24": 32.0, "S25": 51.0, "S26": 16.0, "S27": 24.0, "S28": 32.0, "S29": 25.0, "S30": 8.0, "S31": 8.0}, "Elio Tecnico": {"S02": 0, "S03": 0, "S04": 0, "S05": 0, "S06": 0, "S07": 0, "S08": 0, "S09": 0, "S10": 25.0, "S11": 10.0, "S12": 24.0, "S13": 40.0, "S14": 24.0, "S15": 32.0, "S16": 40.0, "S17": 24.0, "S18": 24.0, "S19": 32.0, "S20": 32.0, "S21": 8.0, "S22": 0, "S23": 0, "S24": 0, "S25": 0, "S26": 0, "S27": 0, "S28": 0, "S29": 0, "S30": 0, "S31": 0}, "Janover": {"S02": 0, "S03": 0, "S04": 0, "S05": 0, "S06": 0, "S07": 0, "S08": 0, "S09": 0, "S10": 0, "S11": 0, "S12": 0, "S13": 0, "S14": 0, "S15": 0, "S16": 0, "S17": 0, "S18": 0, "S19": 0, "S20": 24.0, "S21": 8.0, "S22": 24.0, "S23": 32.0, "S24": 32.0, "S25": 24.0, "S26": 19.0, "S27": 8.0, "S28": 24.0, "S29": 40.0, "S30": 8.0, "S31": 16.0}, "Wiki Tecnico": {"S02": 0, "S03": 0, "S04": 0, "S05": 0, "S06": 0, "S07": 0, "S08": 0, "S09": 0, "S10": 24.0, "S11": 31.0, "S12": 32.0, "S13": 35.0, "S14": 24.0, "S15": 8.0, "S16": 0, "S17": 0, "S18": 0, "S19": 8.0, "S20": 16.0, "S21": 16.0, "S22": 16.0, "S23": 0, "S24": 0, "S25": 0, "S26": 0, "S27": 0, "S28": 0, "S29": 0, "S30": 0, "S31": 0}, "Jose Manuel Perez Practicas": {"S02": 8.0, "S03": 32.0, "S04": 42.0, "S05": 8.0, "S06": 25.0, "S07": 40.0, "S08": 40.0, "S09": 4.0, "S10": 0, "S11": 0, "S12": 0, "S13": 0, "S14": 0, "S15": 0, "S16": 0, "S17": 0, "S18": 0, "S19": 0, "S20": 0, "S21": 0, "S22": 0, "S23": 0, "S24": 0, "S25": 0, "S26": 0, "S27": 0, "S28": 0, "S29": 0, "S30": 0, "S31": 0}, "Alex": {"S02": 0, "S03": 0, "S04": 0, "S05": 0, "S06": 0, "S07": 0, "S08": 0, "S09": 0, "S10": 0, "S11": 0, "S12": 0, "S13": 0, "S14": 0, "S15": 0, "S16": 0, "S17": 0, "S18": 0, "S19": 0, "S20": 0, "S21": 0, "S22": 0, "S23": 0, "S24": 0, "S25": 0, "S26": 16.0, "S27": 32.0, "S28": 40.0, "S29": 40.0, "S30": 32.0, "S31": 24.0}, "Fran": {"S02": 0, "S03": 0, "S04": 0, "S05": 0, "S06": 0, "S07": 0, "S08": 0, "S09": 0, "S10": 9.0, "S11": 0, "S12": 0, "S13": 0, "S14": 15.3, "S15": 0, "S16": 15.1, "S17": 0, "S18": 0, "S19": 0, "S20": 0, "S21": 10.0, "S22": 0, "S23": 0, "S24": 0, "S25": 4.0, "S26": 0, "S27": 0, "S28": 0, "S29": 0, "S30": 0, "S31": 0}, "Carlos Alberto W": {"S02": 9.5, "S03": 0, "S04": 38.0, "S05": 0, "S06": 0, "S07": 0, "S08": 0, "S09": 0, "S10": 0, "S11": 0, "S12": 0, "S13": 0, "S14": 0, "S15": 0, "S16": 0, "S17": 0, "S18": 0, "S19": 0, "S20": 0, "S21": 0, "S22": 0, "S23": 0, "S24": 0, "S25": 0, "S26": 0, "S27": 0, "S28": 0, "S29": 0, "S30": 0, "S31": 0}, "Santi Camilo Hno": {"S02": 0, "S03": 0, "S04": 10.0, "S05": 0, "S06": 0, "S07": 0, "S08": 0, "S09": 0, "S10": 6.0, "S11": 0, "S12": 0, "S13": 0, "S14": 0, "S15": 0, "S16": 0, "S17": 0, "S18": 0, "S19": 0, "S20": 0, "S21": 0, "S22": 0, "S23": 0, "S24": 0, "S25": 0, "S26": 0, "S27": 0, "S28": 8.0, "S29": 0, "S30": 0, "S31": 0}, "Ricardo": {"S02": 0, "S03": 0, "S04": 0, "S05": 0, "S06": 0, "S07": 0, "S08": 0, "S09": 0, "S10": 0, "S11": 0, "S12": 0, "S13": 0, "S14": 0, "S15": 0, "S16": 0, "S17": 0, "S18": 0, "S19": 0, "S20": 0, "S21": 0, "S22": 0, "S23": 0, "S24": 0, "S25": 0, "S26": 0, "S27": 0, "S28": 0, "S29": 0, "S30": 0, "S31": 24.0}, "Silvana (Sil)": {"S02": 0, "S03": 0, "S04": 0, "S05": 0, "S06": 8.0, "S07": 11.0, "S08": 0, "S09": 0, "S10": 0, "S11": 0, "S12": 0, "S13": 0, "S14": 0, "S15": 0, "S16": 0, "S17": 0, "S18": 0, "S19": 0, "S20": 0, "S21": 0, "S22": 0, "S23": 0, "S24": 0, "S25": 0, "S26": 0, "S27": 0, "S28": 0, "S29": 0, "S30": 0, "S31": 0}, "Aitor": {"S02": 0, "S03": 0, "S04": 0, "S05": 0, "S06": 0, "S07": 0, "S08": 0, "S09": 0, "S10": 0, "S11": 0, "S12": 0, "S13": 16.0, "S14": 0, "S15": 0, "S16": 0, "S17": 0, "S18": 0, "S19": 0, "S20": 0, "S21": 0, "S22": 0, "S23": 0, "S24": 0, "S25": 0, "S26": 0, "S27": 0, "S28": 0, "S29": 0, "S30": 0, "S31": 0}, "Demetrio Instalador": {"S02": 0, "S03": 0, "S04": 0, "S05": 0, "S06": 0, "S07": 0, "S08": 0, "S09": 0, "S10": 0, "S11": 0, "S12": 0, "S13": 0, "S14": 0, "S15": 0, "S16": 0, "S17": 0, "S18": 0, "S19": 0, "S20": 0, "S21": 0, "S22": 0, "S23": 0, "S24": 0, "S25": 0, "S26": 0, "S27": 0, "S28": 12.0, "S29": 0, "S30": 0, "S31": 0}, "Cesar": {"S02": 0, "S03": 0, "S04": 0, "S05": 10.0, "S06": 0, "S07": 0, "S08": 0, "S09": 0, "S10": 0, "S11": 0, "S12": 0, "S13": 0, "S14": 0, "S15": 0, "S16": 0, "S17": 0, "S18": 0, "S19": 0, "S20": 0, "S21": 0, "S22": 0, "S23": 1.5, "S24": 0, "S25": 0, "S26": 0, "S27": 0, "S28": 0, "S29": 0, "S30": 0, "S31": 0}, "Juan Manuel Martinez": {"S02": 0, "S03": 0, "S04": 0, "S05": 10.0, "S06": 0, "S07": 0, "S08": 0, "S09": 0, "S10": 0, "S11": 0, "S12": 0, "S13": 0, "S14": 0, "S15": 0, "S16": 0, "S17": 0, "S18": 0, "S19": 0, "S20": 0, "S21": 0, "S22": 0, "S23": 0, "S24": 0, "S25": 0, "S26": 0, "S27": 0, "S28": 0, "S29": 0, "S30": 0, "S31": 0}, "Fran Amides": {"S02": 8.0, "S03": 0, "S04": 0, "S05": 0, "S06": 0, "S07": 0, "S08": 0, "S09": 0, "S10": 0, "S11": 0, "S12": 0, "S13": 0, "S14": 0, "S15": 0, "S16": 0, "S17": 0, "S18": 0, "S19": 0, "S20": 0, "S21": 0, "S22": 0, "S23": 0, "S24": 0, "S25": 0, "S26": 0, "S27": 0, "S28": 0, "S29": 0, "S30": 0, "S31": 0}, "Musta": {"S02": 0, "S03": 0, "S04": 0, "S05": 0, "S06": 0, "S07": 0, "S08": 0, "S09": 0, "S10": 0, "S11": 0, "S12": 0, "S13": 0, "S14": 0, "S15": 0, "S16": 0, "S17": 0, "S18": 0, "S19": 0, "S20": 0, "S21": 0, "S22": 0, "S23": 0, "S24": 0, "S25": 0, "S26": 0, "S27": 0, "S28": 8.0, "S29": 0, "S30": 0, "S31": 0}, "Dani": {"S02": 0, "S03": 0, "S04": 0, "S05": 0, "S06": 0, "S07": 0, "S08": 0, "S09": 0, "S10": 0, "S11": 0, "S12": 0, "S13": 0, "S14": 0, "S15": 0, "S16": 0, "S17": 0, "S18": 0, "S19": 0, "S20": 0, "S21": 0, "S22": 0, "S23": 0, "S24": 0, "S25": 0, "S26": 0, "S27": 0, "S28": 0, "S29": 0, "S30": 0, "S31": 8.0}, "Yovany De Los Santos": {"S02": 0, "S03": 0, "S04": 0, "S05": 0, "S06": 0, "S07": 0, "S08": 0, "S09": 0, "S10": 0, "S11": 0, "S12": 0, "S13": 0, "S14": 0, "S15": 0, "S16": 0, "S17": 0, "S18": 0, "S19": 0, "S20": 0, "S21": 0, "S22": 0, "S23": 0, "S24": 0, "S25": 0, "S26": 0, "S27": 0, "S28": 0, "S29": 0, "S30": 0, "S31": 8.0}}, "mes": {"Guillermo": {"2026-01": 0, "2026-02": 76.0, "2026-03": 154.5, "2026-04": 142.0, "2026-05": 126.5, "2026-06": 140.5, "2026-07": 122.0}, "Cristian": {"2026-01": 0, "2026-02": 76.0, "2026-03": 136.0, "2026-04": 112.0, "2026-05": 115.0, "2026-06": 99.0, "2026-07": 112.0}, "Sherifo": {"2026-01": 0, "2026-02": 0, "2026-03": 105.0, "2026-04": 64.0, "2026-05": 110.5, "2026-06": 140.5, "2026-07": 89.0}, "Yorman Duran": {"2026-01": 0, "2026-02": 0, "2026-03": 0, "2026-04": 70.0, "2026-05": 155.5, "2026-06": 140.5, "2026-07": 89.0}, "Elio Tecnico": {"2026-01": 0, "2026-02": 0, "2026-03": 115.0, "2026-04": 128.0, "2026-05": 72.0, "2026-06": 0, "2026-07": 0}, "Janover": {"2026-01": 0, "2026-02": 0, "2026-03": 0, "2026-04": 0, "2026-05": 56.0, "2026-06": 107.0, "2026-07": 96.0}, "Wiki Tecnico": {"2026-01": 0, "2026-02": 0, "2026-03": 138.0, "2026-04": 16.0, "2026-05": 56.0, "2026-06": 0, "2026-07": 0}, "Jose Manuel Perez Practicas": {"2026-01": 90.0, "2026-02": 109.0, "2026-03": 0, "2026-04": 0, "2026-05": 0, "2026-06": 0, "2026-07": 0}, "Alex": {"2026-01": 0, "2026-02": 0, "2026-03": 0, "2026-04": 0, "2026-05": 0, "2026-06": 24.0, "2026-07": 160.0}, "Fran": {"2026-01": 0, "2026-02": 0, "2026-03": 24.3, "2026-04": 15.1, "2026-05": 10.0, "2026-06": 4.0, "2026-07": 0}, "Carlos Alberto W": {"2026-01": 47.5, "2026-02": 0, "2026-03": 0, "2026-04": 0, "2026-05": 0, "2026-06": 0, "2026-07": 0}, "Santi Camilo Hno": {"2026-01": 10.0, "2026-02": 0, "2026-03": 6.0, "2026-04": 0, "2026-05": 0, "2026-06": 0, "2026-07": 8.0}, "Ricardo": {"2026-01": 0, "2026-02": 0, "2026-03": 0, "2026-04": 0, "2026-05": 0, "2026-06": 0, "2026-07": 24.0}, "Silvana (Sil)": {"2026-01": 0, "2026-02": 19.0, "2026-03": 0, "2026-04": 0, "2026-05": 0, "2026-06": 0, "2026-07": 0}, "Aitor": {"2026-01": 0, "2026-02": 0, "2026-03": 16.0, "2026-04": 0, "2026-05": 0, "2026-06": 0, "2026-07": 0}, "Demetrio Instalador": {"2026-01": 0, "2026-02": 0, "2026-03": 0, "2026-04": 0, "2026-05": 0, "2026-06": 0, "2026-07": 12.0}, "Cesar": {"2026-01": 10.0, "2026-02": 0, "2026-03": 0, "2026-04": 0, "2026-05": 0, "2026-06": 1.5, "2026-07": 0}, "Juan Manuel Martinez": {"2026-01": 10.0, "2026-02": 0, "2026-03": 0, "2026-04": 0, "2026-05": 0, "2026-06": 0, "2026-07": 0}, "Fran Amides": {"2026-01": 8.0, "2026-02": 0, "2026-03": 0, "2026-04": 0, "2026-05": 0, "2026-06": 0, "2026-07": 0}, "Musta": {"2026-01": 0, "2026-02": 0, "2026-03": 0, "2026-04": 0, "2026-05": 0, "2026-06": 0, "2026-07": 8.0}, "Dani": {"2026-01": 0, "2026-02": 0, "2026-03": 0, "2026-04": 0, "2026-05": 0, "2026-06": 0, "2026-07": 8.0}, "Yovany De Los Santos": {"2026-01": 0, "2026-02": 0, "2026-03": 0, "2026-04": 0, "2026-05": 0, "2026-06": 0, "2026-07": 8.0}}};
+
+const MES_LABEL = {"2026-01":"ENE","2026-02":"FEB","2026-03":"MAR","2026-04":"ABR","2026-05":"MAY","2026-06":"JUN","2026-07":"JUL"};
+const MES_SPAN = {"2026-01":4,"2026-02":4,"2026-03":5,"2026-04":4,"2026-05":4,"2026-06":5,"2026-07":4};
+
+const MAX_SEM = 62;
+const MAX_MES = 160;
+
+function alpha(v, max) {
+  if (!v) return 0;
+  return Math.min(0.92, 0.10 + 0.82 * (v / max));
+}
+function fmt(v) {
+  if (!v) return "·";
+  return Number.isInteger(v) ? String(v) : v.toFixed(1);
+}
+
+const table = document.getElementById("tabla");
+
+// Header row 1: month group labels over week columns
+const thead = document.createElement("thead");
+const rowGroup = document.createElement("tr");
+rowGroup.appendChild(Object.assign(document.createElement("th"), {className: "th-name"}));
+DATA.meses.forEach((m, i) => {
+  const th = document.createElement("th");
+  th.className = "th-month-group" + (i === 0 ? " first" : "");
+  th.colSpan = MES_SPAN[m];
+  th.textContent = MES_LABEL[m];
+  rowGroup.appendChild(th);
+});
+const gapTh1 = document.createElement("th"); gapTh1.className = "col-gap"; rowGroup.appendChild(gapTh1);
+const mesHeadTh = document.createElement("th");
+mesHeadTh.className = "th-month-group first";
+mesHeadTh.colSpan = 7;
+mesHeadTh.textContent = "AGREGADO MENSUAL";
+rowGroup.appendChild(mesHeadTh);
+thead.appendChild(rowGroup);
+
+// Header row 2: week numbers + month abbreviations
+const rowLabels = document.createElement("tr");
+const thName = document.createElement("th");
+thName.className = "th-name";
+thName.textContent = "TÉCNICO";
+rowLabels.appendChild(thName);
+DATA.semanas.forEach(s => {
+  const th = document.createElement("th");
+  th.className = "th-week";
+  th.textContent = s.replace("S", "");
+  rowLabels.appendChild(th);
+});
+const gapTh2 = document.createElement("th"); gapTh2.className = "col-gap"; rowLabels.appendChild(gapTh2);
+DATA.meses.forEach(m => {
+  const th = document.createElement("th");
+  th.className = "th-month";
+  th.textContent = MES_LABEL[m];
+  rowLabels.appendChild(th);
+});
+thead.appendChild(rowLabels);
+table.appendChild(thead);
+
+// Body rows: one per tecnico
+const tbody = document.createElement("tbody");
+DATA.tecnicos.forEach(t => {
+  const tr = document.createElement("tr");
+  const tdName = document.createElement("td");
+  tdName.className = "row-name";
+  tdName.innerHTML = `<span class="name">${t}</span><span class="total">${fmt(DATA.totales[t])}h</span>`;
+  tr.appendChild(tdName);
+
+  DATA.semanas.forEach(s => {
+    const v = DATA.sem[t][s];
+    const td = document.createElement("td");
+    td.className = "cell" + (v ? "" : " zero");
+    td.style.setProperty("--a", alpha(v, MAX_SEM));
+    td.textContent = fmt(v);
+    tr.appendChild(td);
+  });
+
+  const tdGap = document.createElement("td"); tdGap.className = "col-gap"; tr.appendChild(tdGap);
+
+  DATA.meses.forEach(m => {
+    const v = DATA.mes[t][m];
+    const td = document.createElement("td");
+    td.className = "cell month" + (v ? "" : " zero");
+    td.style.setProperty("--a", alpha(v, MAX_MES));
+    td.textContent = fmt(v);
+    tr.appendChild(td);
+  });
+
+  tbody.appendChild(tr);
+});
+table.appendChild(tbody);
+
+// Footer row: column totals
+const tfoot = document.createElement("tfoot");
+const trFoot = document.createElement("tr");
+trFoot.className = "foot";
+const tdFootName = document.createElement("td");
+tdFootName.className = "row-name";
+tdFootName.innerHTML = `<span class="name">Total</span>`;
+trFoot.appendChild(tdFootName);
+DATA.semanas.forEach(s => {
+  const total = DATA.tecnicos.reduce((acc, t) => acc + (DATA.sem[t][s] || 0), 0);
+  const td = document.createElement("td");
+  td.className = "cell" + (total ? "" : " zero");
+  td.style.setProperty("--a", alpha(total, MAX_SEM * 4));
+  td.textContent = fmt(Math.round(total * 10) / 10);
+  trFoot.appendChild(td);
+});
+const tdGapFoot = document.createElement("td"); tdGapFoot.className = "col-gap"; trFoot.appendChild(tdGapFoot);
+DATA.meses.forEach(m => {
+  const total = DATA.tecnicos.reduce((acc, t) => acc + (DATA.mes[t][m] || 0), 0);
+  const td = document.createElement("td");
+  td.className = "cell month" + (total ? "" : " zero");
+  td.style.setProperty("--a", alpha(total, MAX_MES * 4));
+  td.textContent = fmt(Math.round(total * 10) / 10);
+  trFoot.appendChild(td);
+});
+tfoot.appendChild(trFoot);
+table.appendChild(tfoot);
+</script>

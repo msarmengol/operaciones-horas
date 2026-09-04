@@ -1,0 +1,308 @@
+<title>Planificado vs. Real</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --paper: #f5f5f5;
+    --ink: #2d3142;
+    --muted: #4f5d75;
+    --soft: #7a8399;
+    --accent: #eb6c36;
+    --accent-fill-12: rgba(235,108,54,0.12);
+    --muted-fill-15: rgba(79,93,117,0.15);
+    --neutral-fill-05: rgba(45,49,66,0.05);
+    --neutral-stroke-30: rgba(45,49,66,0.30);
+    --overlay-06: rgba(45,49,66,0.06);
+    --overlay-08: rgba(45,49,66,0.08);
+    --overlay-10: rgba(45,49,66,0.10);
+    --overlay-25: rgba(45,49,66,0.25);
+    --font-sans: 'Geist', system-ui, sans-serif;
+    --font-serif: 'Instrument Serif', serif;
+    --font-mono: 'Geist Mono', ui-monospace, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #2d3142;
+      --ink: #f5f5f5;
+      --muted: #bfc0c0;
+      --soft: #8e98ac;
+      --accent: #f08a59;
+      --accent-fill-12: rgba(240,138,89,0.14);
+      --muted-fill-15: rgba(191,192,192,0.15);
+      --neutral-fill-05: rgba(245,245,245,0.06);
+      --neutral-stroke-30: rgba(245,245,245,0.30);
+      --overlay-06: rgba(245,245,245,0.06);
+      --overlay-08: rgba(245,245,245,0.08);
+      --overlay-10: rgba(245,245,245,0.10);
+      --overlay-25: rgba(245,245,245,0.25);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #2d3142;
+    --ink: #f5f5f5;
+    --muted: #bfc0c0;
+    --soft: #8e98ac;
+    --accent: #f08a59;
+    --accent-fill-12: rgba(240,138,89,0.14);
+    --muted-fill-15: rgba(191,192,192,0.15);
+    --neutral-fill-05: rgba(245,245,245,0.06);
+    --neutral-stroke-30: rgba(245,245,245,0.30);
+    --overlay-06: rgba(245,245,245,0.06);
+    --overlay-08: rgba(245,245,245,0.08);
+    --overlay-10: rgba(245,245,245,0.10);
+    --overlay-25: rgba(245,245,245,0.25);
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+  }
+
+  .frame { max-width: 1100px; width: 100%; }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+
+  h1 {
+    font-family: var(--font-serif);
+    font-size: clamp(1.5rem, 2.2vw + 0.75rem, 2rem);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    text-wrap: balance;
+    margin-bottom: 0.5rem;
+  }
+
+  .subtitle {
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    color: var(--muted);
+    max-width: 65ch;
+    margin-bottom: 1.75rem;
+  }
+
+  svg { width: 100%; min-width: 720px; display: block; }
+
+  .footer {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--overlay-10);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--soft);
+  }
+
+  .grid-line { stroke: var(--overlay-08); stroke-width: 0.8; }
+  .grid-line-top { stroke: var(--overlay-06); stroke-width: 0.8; }
+  .axis-line { stroke: var(--overlay-25); stroke-width: 1; }
+  .tick-label { fill: var(--muted); font-size: 8px; font-family: var(--font-mono); }
+  .axis-title { fill: var(--muted); font-size: 7px; font-family: var(--font-mono); letter-spacing: 0.14em; }
+  .cat-label { fill: var(--ink); font-size: 11px; font-weight: 600; font-family: var(--font-sans); }
+  .value-label-programado { fill: var(--muted); font-size: 8px; font-weight: 600; font-family: var(--font-mono); }
+  .value-label-imprevisto { fill: var(--accent); font-size: 8px; font-weight: 600; font-family: var(--font-mono); }
+  .value-label-sindato { fill: var(--soft); font-size: 8px; font-weight: 600; font-family: var(--font-mono); }
+  .mask { fill: var(--paper); }
+  .seg-programado { fill: var(--muted-fill-15); stroke: var(--muted); stroke-width: 1; }
+  .seg-imprevisto { fill: var(--accent-fill-12); stroke: var(--accent); stroke-width: 1; }
+  .seg-sindato { fill: var(--neutral-fill-05); stroke: var(--neutral-stroke-30); stroke-width: 1; }
+  .legend-rule { stroke: var(--overlay-10); stroke-width: 0.8; }
+  .legend-text { fill: var(--muted); font-family: var(--font-mono); }
+  .legend-label { fill: var(--muted); font-size: 8px; letter-spacing: 0.18em; font-family: var(--font-mono); }
+
+  .addendum {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--overlay-10);
+  }
+  .addendum .eyebrow { margin-bottom: 0.4rem; }
+  .addendum h2 {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+  }
+  .addendum .caveat {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 0.85rem;
+    color: var(--muted);
+    max-width: 68ch;
+    margin-bottom: 1.25rem;
+  }
+  .mini-svg { width: 100%; min-width: 720px; display: block; }
+  .mini-bar { fill: var(--overlay-10); stroke: var(--soft); stroke-width: 1; }
+  .mini-value { fill: var(--ink); font-size: 8px; font-weight: 600; font-family: var(--font-mono); }
+</style>
+
+<div class="frame">
+  <p class="eyebrow">Bar chart · Operaciones</p>
+  <h1>Planificado vs. real</h1>
+  <p class="subtitle">Horas por mes según su estado frente a la programación diaria ("PROGRAMACION &lt;día&gt;"): programadas, imprevistos (técnico trabajó sin estar programado ese día) y sin programación registrada. Las tres cifras sobre cada barra son las horas de cada estado, en ese orden.</p>
+
+  <svg viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="plan-real-title plan-real-desc">
+    <title id="plan-real-title">Horas planificadas vs. reales por mes, 2026</title>
+    <desc id="plan-real-desc">Gráfico de barras apiladas mostrando, por mes entre enero y julio de 2026, las horas programadas, imprevistas y sin programación registrada; las horas imprevistas caen de un pico de 235.3 en marzo a 9.5 en junio antes de repuntar a 56 en julio.</desc>
+
+    <text class="axis-title" transform="rotate(-90 24 230)" x="24" y="230" text-anchor="middle">HORAS</text>
+
+    <line class="grid-line" x1="80" y1="325" x2="960" y2="325"/>
+    <line class="grid-line" x1="80" y1="230" x2="960" y2="230"/>
+    <line class="grid-line" x1="80" y1="135" x2="960" y2="135"/>
+    <line class="grid-line-top" x1="80" y1="40" x2="960" y2="40"/>
+
+    <line class="axis-line" x1="80" y1="40" x2="80" y2="420"/>
+    <line class="axis-line" x1="80" y1="420" x2="960" y2="420"/>
+
+    <text class="tick-label" x="72" y="424" text-anchor="end">0</text>
+    <text class="tick-label" x="72" y="329" text-anchor="end">200</text>
+    <text class="tick-label" x="72" y="234" text-anchor="end">400</text>
+    <text class="tick-label" x="72" y="139" text-anchor="end">600</text>
+    <text class="tick-label" x="72" y="44" text-anchor="end">800</text>
+
+    <!-- ENE: programado 130 / imprevisto 20 / sin_dato 25.5 -->
+    <rect class="mask" x="107" y="337" width="72" height="83"/>
+    <rect class="seg-programado" x="107" y="358" width="72" height="62"/>
+    <rect class="seg-imprevisto" x="107" y="349" width="72" height="9"/>
+    <rect class="seg-sindato" x="107" y="337" width="72" height="12"/>
+    <text class="value-label-programado" x="115" y="329" text-anchor="middle">130</text>
+    <text class="value-label-imprevisto" x="143" y="329" text-anchor="middle">20</text>
+    <text class="value-label-sindato" x="171" y="329" text-anchor="middle">25.5</text>
+
+    <!-- FEB: programado 210 / imprevisto 38 / sin_dato 32 -->
+    <rect class="mask" x="233" y="287" width="72" height="133"/>
+    <rect class="seg-programado" x="233" y="320" width="72" height="100"/>
+    <rect class="seg-imprevisto" x="233" y="302" width="72" height="18"/>
+    <rect class="seg-sindato" x="233" y="287" width="72" height="15"/>
+    <text class="value-label-programado" x="241" y="279" text-anchor="middle">210</text>
+    <text class="value-label-imprevisto" x="269" y="279" text-anchor="middle">38</text>
+    <text class="value-label-sindato" x="297" y="279" text-anchor="middle">32</text>
+
+    <!-- MAR: programado 419.5 / imprevisto 235.3 / sin_dato 40 -->
+    <rect class="mask" x="359" y="90" width="72" height="330"/>
+    <rect class="seg-programado" x="359" y="221" width="72" height="199"/>
+    <rect class="seg-imprevisto" x="359" y="109" width="72" height="112"/>
+    <rect class="seg-sindato" x="359" y="90" width="72" height="19"/>
+    <text class="value-label-programado" x="367" y="82" text-anchor="middle">419.5</text>
+    <text class="value-label-imprevisto" x="395" y="82" text-anchor="middle">235.3</text>
+    <text class="value-label-sindato" x="423" y="82" text-anchor="middle">40</text>
+
+    <!-- ABR: programado 372 / imprevisto 135.1 / sin_dato 40 -->
+    <rect class="mask" x="485" y="160" width="72" height="260"/>
+    <rect class="seg-programado" x="485" y="243" width="72" height="177"/>
+    <rect class="seg-imprevisto" x="485" y="179" width="72" height="64"/>
+    <rect class="seg-sindato" x="485" y="160" width="72" height="19"/>
+    <text class="value-label-programado" x="493" y="152" text-anchor="middle">372</text>
+    <text class="value-label-imprevisto" x="521" y="152" text-anchor="middle">135.1</text>
+    <text class="value-label-sindato" x="549" y="152" text-anchor="middle">40</text>
+
+    <!-- MAY: programado 453.5 / imprevisto 128 / sin_dato 120 -->
+    <rect class="mask" x="611" y="87" width="72" height="333"/>
+    <rect class="seg-programado" x="611" y="205" width="72" height="215"/>
+    <rect class="seg-imprevisto" x="611" y="144" width="72" height="61"/>
+    <rect class="seg-sindato" x="611" y="87" width="72" height="57"/>
+    <text class="value-label-programado" x="619" y="79" text-anchor="middle">453.5</text>
+    <text class="value-label-imprevisto" x="647" y="79" text-anchor="middle">128</text>
+    <text class="value-label-sindato" x="675" y="79" text-anchor="middle">120</text>
+
+    <!-- JUN: programado 619.5 / imprevisto 9.5 / sin_dato 28 -->
+    <rect class="mask" x="737" y="108" width="72" height="312"/>
+    <rect class="seg-programado" x="737" y="126" width="72" height="294"/>
+    <rect class="seg-imprevisto" x="737" y="121" width="72" height="5"/>
+    <rect class="seg-sindato" x="737" y="108" width="72" height="13"/>
+    <text class="value-label-programado" x="745" y="100" text-anchor="middle">619.5</text>
+    <text class="value-label-imprevisto" x="773" y="100" text-anchor="middle">9.5</text>
+    <text class="value-label-sindato" x="801" y="100" text-anchor="middle">28</text>
+
+    <!-- JUL: programado 672 / imprevisto 56 / sin_dato 8 -->
+    <rect class="mask" x="863" y="70" width="72" height="350"/>
+    <rect class="seg-programado" x="863" y="101" width="72" height="319"/>
+    <rect class="seg-imprevisto" x="863" y="74" width="72" height="27"/>
+    <rect class="seg-sindato" x="863" y="70" width="72" height="4"/>
+    <text class="value-label-programado" x="871" y="62" text-anchor="middle">672</text>
+    <text class="value-label-imprevisto" x="899" y="62" text-anchor="middle">56</text>
+    <text class="value-label-sindato" x="927" y="62" text-anchor="middle">8</text>
+
+    <text class="cat-label" x="143" y="440" text-anchor="middle">ENE</text>
+    <text class="cat-label" x="269" y="440" text-anchor="middle">FEB</text>
+    <text class="cat-label" x="395" y="440" text-anchor="middle">MAR</text>
+    <text class="cat-label" x="521" y="440" text-anchor="middle">ABR</text>
+    <text class="cat-label" x="647" y="440" text-anchor="middle">MAY</text>
+    <text class="cat-label" x="773" y="440" text-anchor="middle">JUN</text>
+    <text class="cat-label" x="899" y="440" text-anchor="middle">JUL</text>
+
+    <line class="legend-rule" x1="40" y1="462" x2="960" y2="462"/>
+    <text class="legend-label" x="40" y="478">LEGEND</text>
+
+    <rect x="40" y="488" width="16" height="10" rx="2" class="seg-programado"/>
+    <text class="legend-text" x="64" y="497" font-size="8.5">Programado</text>
+
+    <rect x="220" y="488" width="16" height="10" rx="2" class="seg-imprevisto"/>
+    <text class="legend-text" x="244" y="497" font-size="8.5">Imprevisto (no programado)</text>
+
+    <rect x="460" y="488" width="16" height="10" rx="2" class="seg-sindato"/>
+    <text class="legend-text" x="484" y="497" font-size="8.5">Sin programación registrada</text>
+  </svg>
+
+  <div class="addendum">
+    <p class="eyebrow">Dato complementario</p>
+    <h2>Técnico-días planificados sin ningún reporte de horas</h2>
+    <p class="caveat">No es el inverso de "imprevisto": no hay horas planificadas que restar (la programación no lleva cifra de horas por técnico, solo quién estaba asignado). Esta cuenta técnico-días asignados en la programación sin ninguna fila en tabla_horas.csv ese día — mezcla ausencias/cambios reales con casos donde sí se trabajó pero el reporte llegó solo por imagen de WhatsApp (no legible como texto). No se puede separar una causa de la otra con los datos actuales.</p>
+
+    <svg class="mini-svg" viewBox="0 0 1000 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="mini-title mini-desc">
+      <title id="mini-title">Técnico-días planificados sin reporte de horas, por mes</title>
+      <desc id="mini-desc">Gráfico de barras mostrando, por mes entre enero y julio de 2026, el número de técnico-días que figuraban en la programación pero no tienen ninguna fila de horas registrada en texto, entre 56 en marzo y 132 en julio.</desc>
+
+      <line class="grid-line" x1="80" y1="100" x2="960" y2="100"/>
+      <line class="axis-line" x1="80" y1="30" x2="80" y2="170"/>
+      <line class="axis-line" x1="80" y1="170" x2="960" y2="170"/>
+      <text class="tick-label" x="72" y="103" text-anchor="end">70</text>
+      <text class="tick-label" x="72" y="174" text-anchor="end">0</text>
+
+      <rect class="mini-bar" x="113" y="53" width="60" height="117"/>
+      <text class="mini-value" x="143" y="47" text-anchor="middle">117</text>
+
+      <rect class="mini-bar" x="239" y="74" width="60" height="96"/>
+      <text class="mini-value" x="269" y="68" text-anchor="middle">96</text>
+
+      <rect class="mini-bar" x="365" y="114" width="60" height="56"/>
+      <text class="mini-value" x="395" y="108" text-anchor="middle">56</text>
+
+      <rect class="mini-bar" x="491" y="100" width="60" height="70"/>
+      <text class="mini-value" x="521" y="94" text-anchor="middle">70</text>
+
+      <rect class="mini-bar" x="617" y="91" width="60" height="79"/>
+      <text class="mini-value" x="647" y="85" text-anchor="middle">79</text>
+
+      <rect class="mini-bar" x="743" y="53" width="60" height="117"/>
+      <text class="mini-value" x="773" y="47" text-anchor="middle">117</text>
+
+      <rect class="mini-bar" x="869" y="38" width="60" height="132"/>
+      <text class="mini-value" x="899" y="32" text-anchor="middle">132</text>
+
+      <text class="cat-label" x="143" y="190" text-anchor="middle">ENE</text>
+      <text class="cat-label" x="269" y="190" text-anchor="middle">FEB</text>
+      <text class="cat-label" x="395" y="190" text-anchor="middle">MAR</text>
+      <text class="cat-label" x="521" y="190" text-anchor="middle">ABR</text>
+      <text class="cat-label" x="647" y="190" text-anchor="middle">MAY</text>
+      <text class="cat-label" x="773" y="190" text-anchor="middle">JUN</text>
+      <text class="cat-label" x="899" y="190" text-anchor="middle">JUL</text>
+    </svg>
+  </div>
+
+  <p class="footer">Fuente: tabla_horas.csv cruzada con tabla_asignaciones.csv y planificado_sin_horas.csv · 2026</p>
+</div>

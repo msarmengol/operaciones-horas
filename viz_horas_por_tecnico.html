@@ -1,0 +1,215 @@
+<title>Horas por Técnico</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --paper: #f5f5f5;
+    --ink: #2d3142;
+    --muted: #4f5d75;
+    --soft: #7a8399;
+    --accent: #eb6c36;
+    --accent-tint: rgba(235,108,54,0.08);
+    --accent-fill-12: rgba(235,108,54,0.12);
+    --muted-fill-15: rgba(79,93,117,0.15);
+    --overlay-06: rgba(45,49,66,0.06);
+    --overlay-08: rgba(45,49,66,0.08);
+    --overlay-10: rgba(45,49,66,0.10);
+    --overlay-25: rgba(45,49,66,0.25);
+    --font-sans: 'Geist', system-ui, sans-serif;
+    --font-serif: 'Instrument Serif', serif;
+    --font-mono: 'Geist Mono', ui-monospace, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #2d3142;
+      --ink: #f5f5f5;
+      --muted: #bfc0c0;
+      --soft: #8e98ac;
+      --accent: #f08a59;
+      --accent-tint: rgba(240,138,89,0.10);
+      --accent-fill-12: rgba(240,138,89,0.14);
+      --muted-fill-15: rgba(191,192,192,0.15);
+      --overlay-06: rgba(245,245,245,0.06);
+      --overlay-08: rgba(245,245,245,0.08);
+      --overlay-10: rgba(245,245,245,0.10);
+      --overlay-25: rgba(245,245,245,0.25);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #2d3142;
+    --ink: #f5f5f5;
+    --muted: #bfc0c0;
+    --soft: #8e98ac;
+    --accent: #f08a59;
+    --accent-tint: rgba(240,138,89,0.10);
+    --accent-fill-12: rgba(240,138,89,0.14);
+    --muted-fill-15: rgba(191,192,192,0.15);
+    --overlay-06: rgba(245,245,245,0.06);
+    --overlay-08: rgba(245,245,245,0.08);
+    --overlay-10: rgba(245,245,245,0.10);
+    --overlay-25: rgba(245,245,245,0.25);
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+  }
+
+  .frame { max-width: 1100px; width: 100%; }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+
+  h1 {
+    font-family: var(--font-serif);
+    font-size: clamp(1.5rem, 2.2vw + 0.75rem, 2rem);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    text-wrap: balance;
+    margin-bottom: 0.5rem;
+  }
+
+  .subtitle {
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    color: var(--muted);
+    max-width: 65ch;
+    margin-bottom: 1.75rem;
+  }
+
+  svg { width: 100%; min-width: 720px; display: block; }
+
+  .footer {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--overlay-10);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--soft);
+  }
+
+  .grid-line { stroke: var(--overlay-08); stroke-width: 0.8; }
+  .grid-line-top { stroke: var(--overlay-06); stroke-width: 0.8; }
+  .axis-line { stroke: var(--overlay-25); stroke-width: 1; }
+  .tick-label { fill: var(--muted); font-size: 8px; font-family: var(--font-mono); }
+  .axis-title { fill: var(--muted); font-size: 7px; font-family: var(--font-mono); letter-spacing: 0.14em; }
+  .cat-label { fill: var(--ink); font-size: 11px; font-weight: 600; font-family: var(--font-sans); }
+  .value-label { fill: var(--ink); font-size: 9px; font-weight: 600; font-family: var(--font-mono); }
+  .mask { fill: var(--paper); }
+  .seg-normal { fill: var(--muted-fill-15); stroke: var(--muted); stroke-width: 1; }
+  .seg-extra { fill: var(--accent-fill-12); stroke: var(--accent); stroke-width: 1; }
+  .legend-rule { stroke: var(--overlay-10); stroke-width: 0.8; }
+  .legend-text { fill: var(--muted); font-family: var(--font-mono); }
+  .legend-label { fill: var(--muted); font-size: 8px; letter-spacing: 0.18em; font-family: var(--font-mono); }
+</style>
+
+<div class="frame">
+  <p class="eyebrow">Bar chart · Operaciones</p>
+  <h1>Horas por técnico</h1>
+  <p class="subtitle">Top 8 de 22 técnicos por horas totales acumuladas, enero–julio 2026. Los 14 técnicos restantes suman 433&nbsp;h combinadas y no se muestran individualmente.</p>
+
+  <svg viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="horas-tecnico-title horas-tecnico-desc">
+    <title id="horas-tecnico-title">Horas por técnico, top 8</title>
+    <desc id="horas-tecnico-desc">Gráfico de barras apiladas mostrando las horas normales y extra acumuladas por cada uno de los 8 técnicos con más horas trabajadas entre enero y julio de 2026, encabezados por Guillermo con 761.5 horas.</desc>
+
+    <text class="axis-title" transform="rotate(-90 24 230)" x="24" y="230" text-anchor="middle">HORAS</text>
+
+    <line class="grid-line" x1="80" y1="325" x2="960" y2="325"/>
+    <line class="grid-line" x1="80" y1="230" x2="960" y2="230"/>
+    <line class="grid-line" x1="80" y1="135" x2="960" y2="135"/>
+    <line class="grid-line-top" x1="80" y1="40" x2="960" y2="40"/>
+
+    <line class="axis-line" x1="80" y1="40" x2="80" y2="420"/>
+    <line class="axis-line" x1="80" y1="420" x2="960" y2="420"/>
+
+    <text class="tick-label" x="72" y="424" text-anchor="end">0</text>
+    <text class="tick-label" x="72" y="329" text-anchor="end">200</text>
+    <text class="tick-label" x="72" y="234" text-anchor="end">400</text>
+    <text class="tick-label" x="72" y="139" text-anchor="end">600</text>
+    <text class="tick-label" x="72" y="44" text-anchor="end">800</text>
+
+    <!-- Guillermo: normal 713 / extra 48.5 / total 761.5 -->
+    <rect class="mask" x="99" y="58" width="72" height="362"/>
+    <rect class="seg-normal" x="99" y="81" width="72" height="339"/>
+    <rect class="seg-extra" x="99" y="58" width="72" height="23"/>
+    <text class="value-label" x="135" y="50" text-anchor="middle">761.5</text>
+
+    <!-- Cristian: normal 632 / extra 18 / total 650 -->
+    <rect class="mask" x="209" y="111" width="72" height="309"/>
+    <rect class="seg-normal" x="209" y="120" width="72" height="300"/>
+    <rect class="seg-extra" x="209" y="111" width="72" height="9"/>
+    <text class="value-label" x="245" y="103" text-anchor="middle">650</text>
+
+    <!-- Sherifo: normal 496 / extra 13 / total 509 -->
+    <rect class="mask" x="319" y="178" width="72" height="242"/>
+    <rect class="seg-normal" x="319" y="184" width="72" height="236"/>
+    <rect class="seg-extra" x="319" y="178" width="72" height="6"/>
+    <text class="value-label" x="355" y="170" text-anchor="middle">509</text>
+
+    <!-- Yorman Duran: normal 446 / extra 9 / total 455 -->
+    <rect class="mask" x="429" y="204" width="72" height="216"/>
+    <rect class="seg-normal" x="429" y="208" width="72" height="212"/>
+    <rect class="seg-extra" x="429" y="204" width="72" height="4"/>
+    <text class="value-label" x="465" y="196" text-anchor="middle">455</text>
+
+    <!-- Elio Tecnico: normal 312 / extra 3 / total 315 -->
+    <rect class="mask" x="539" y="270" width="72" height="150"/>
+    <rect class="seg-normal" x="539" y="272" width="72" height="148"/>
+    <rect class="seg-extra" x="539" y="270" width="72" height="2"/>
+    <text class="value-label" x="575" y="262" text-anchor="middle">315</text>
+
+    <!-- Janover: normal 256 / extra 3 / total 259 -->
+    <rect class="mask" x="649" y="297" width="72" height="123"/>
+    <rect class="seg-normal" x="649" y="298" width="72" height="122"/>
+    <rect class="seg-extra" x="649" y="297" width="72" height="1"/>
+    <text class="value-label" x="685" y="289" text-anchor="middle">259</text>
+
+    <!-- Wiki Tecnico: normal 203 / extra 7 / total 210 -->
+    <rect class="mask" x="759" y="320" width="72" height="100"/>
+    <rect class="seg-normal" x="759" y="324" width="72" height="96"/>
+    <rect class="seg-extra" x="759" y="320" width="72" height="4"/>
+    <text class="value-label" x="795" y="312" text-anchor="middle">210</text>
+
+    <!-- Jose Manuel: normal 196 / extra 3 / total 199 -->
+    <rect class="mask" x="869" y="325" width="72" height="95"/>
+    <rect class="seg-normal" x="869" y="327" width="72" height="93"/>
+    <rect class="seg-extra" x="869" y="325" width="72" height="2"/>
+    <text class="value-label" x="905" y="317" text-anchor="middle">199</text>
+
+    <text class="cat-label" x="135" y="440" text-anchor="middle">Guillermo</text>
+    <text class="cat-label" x="245" y="440" text-anchor="middle">Cristian</text>
+    <text class="cat-label" x="355" y="440" text-anchor="middle">Sherifo</text>
+    <text class="cat-label" x="465" y="440" text-anchor="middle">Yorman</text>
+    <text class="cat-label" x="575" y="440" text-anchor="middle">Elio</text>
+    <text class="cat-label" x="685" y="440" text-anchor="middle">Janover</text>
+    <text class="cat-label" x="795" y="440" text-anchor="middle">Wiki</text>
+    <text class="cat-label" x="905" y="440" text-anchor="middle">J. Manuel</text>
+
+    <line class="legend-rule" x1="40" y1="462" x2="960" y2="462"/>
+    <text class="legend-label" x="40" y="478">LEGEND</text>
+
+    <rect x="40" y="488" width="16" height="10" rx="2" class="seg-normal"/>
+    <text class="legend-text" x="64" y="497" font-size="8.5">Horas normales</text>
+
+    <rect x="220" y="488" width="16" height="10" rx="2" class="seg-extra"/>
+    <text class="legend-text" x="244" y="497" font-size="8.5">Horas extra</text>
+  </svg>
+
+  <p class="footer">Fuente: tabla_horas.csv (extracción heurística del chat de operaciones) · Ene–Jul 2026</p>
+</div>
